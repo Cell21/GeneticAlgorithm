@@ -48,25 +48,31 @@ public class Bunny : Animal
     {
         Vector3Int currentTile = base.GetTilePosition();
         Vector2Int currentTileConverted = new Vector2Int(currentTile.x, currentTile.y);
+
         List<Vector2Int> adjacentTiles = GetAdjacentTiles(currentTileConverted);
-        if (base.path != null && base.path.Count > 0)
+        Vector2Int nextTile;
+
+        if (adjacentTiles.Count > 0)
         {
-            base.path[0] = ChooseNextTile(adjacentTiles, currentTileConverted);
+            // If there are unvisited adjacent tiles, choose one
+            nextTile = ChooseNextTile(adjacentTiles, currentTileConverted);
         }
         else
         {
-            // Initialize the path or handle the case where it's empty
-            base.path = new List<Vector2Int> { ChooseNextTile(adjacentTiles, currentTileConverted) };
+            // No unvisited adjacent tiles, choose a random adjacent tile
+            nextTile = ChooseRandomAdjacentTile(currentTileConverted);
         }
 
-        if (path[0] != currentTileConverted)
+        // Only update path and start coroutine if the next tile is different
+        if (nextTile != currentTileConverted)
         {
             base.pathfinderExecuted = true;
+            base.path = new List<Vector2Int> { nextTile };
             StartCoroutine(FollowPath());
-            visitedTiles.Add(path[0]); // Mark this tile as visited
+            visitedTiles.Add(nextTile); // Mark this tile as visited
         }
+    
     }
-
 
     private List<Vector2Int> GetAdjacentTiles(Vector2Int currentTile)
     {
@@ -101,6 +107,42 @@ public class Bunny : Animal
         int randomIndex = Random.Range(0, adjacentTiles.Count);
         return adjacentTiles[randomIndex];
     }
+
+    private Vector2Int ChooseRandomAdjacentTile(Vector2Int currentTile)
+    {
+        // Get all adjacent tiles regardless of visited status
+        List<Vector2Int> allAdjacentTiles = GetAllAdjacentTiles(currentTile);
+        if (allAdjacentTiles.Count == 0) return currentTile; // No adjacent tiles, stay in place
+
+        // Randomly select any adjacent tile
+        int randomIndex = Random.Range(0, allAdjacentTiles.Count);
+        return allAdjacentTiles[randomIndex];
+    }
+
+    private List<Vector2Int> GetAllAdjacentTiles(Vector2Int currentTile)
+    {
+        List<Vector2Int> adjacentTiles = new List<Vector2Int>();
+        // Directions: up, down, left, right
+        Vector2Int[] directions = new Vector2Int[]
+        {
+        new Vector2Int(0, 1),  // up
+        new Vector2Int(0, -1), // down
+        new Vector2Int(-1, 0), // left
+        new Vector2Int(1, 0)   // right
+        };
+
+        foreach (Vector2Int dir in directions)
+        {
+            Vector2Int adjacentTile = currentTile + dir;
+            if (PathFinder.Instance.IsTileWalkable(adjacentTile))
+            {
+                adjacentTiles.Add(adjacentTile);
+            }
+        }
+
+        return adjacentTiles;
+    }
+
     //-------------------------------------------------------------------------------------------
 
 

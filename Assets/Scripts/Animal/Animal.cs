@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 public class Animal : MonoBehaviour
 {
     public float moveSpeed = 0.25f;
-    public float fome = 100; // Initial hunger level, for example, 100
+    public float hunger = 100; // Initial hunger level, for example, 100
     public float hungerDecayRate = 5; // Amount of hunger to decay
     public float hungerDecayInterval = 2f; // Time in seconds between each hunger decay
     
@@ -76,8 +76,8 @@ public class Animal : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(hungerDecayInterval);
-            fome -= hungerDecayRate;
-            if (fome < 0) fome = 0; // Prevent hunger from going below zero
+            hunger -= hungerDecayRate;
+            if (hunger < 0) hunger = 0; // Prevent hunger from going below zero
         }
     }
 }

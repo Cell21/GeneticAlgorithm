@@ -357,14 +357,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileMap: {fileID: 1993606812}
-  Floor: {fileID: 11400000, guid: 78c2933d59c4cac46a509f9dedc7f751, type: 2}
-  Wall: {fileID: 11400000, guid: a753d68009c26e3428184395d88bebae, type: 2}
-  MapWidth: 30
-  MapHeight: 30
-  MaximumWalkers: 10
-  TileCount: 0
-  FillPercentage: 0.4
-  WaitTime: 0.05
+  floorTile: {fileID: 11400000, guid: 78c2933d59c4cac46a509f9dedc7f751, type: 2}
+  wallTile: {fileID: 11400000, guid: a753d68009c26e3428184395d88bebae, type: 2}
+  mapWidth: 30
+  mapHeight: 30
+  maximumWalkers: 10
+  tileCount: 0
+  fillPercentage: 0.4
+  waitTime: 0.05
   bushPrefab: {fileID: 6511649499364479726, guid: 0f025fa61581cce41bc6ad9ed6786cd1, type: 3}
   bushParent: {fileID: 440209304}
   rabbitPrefab: {fileID: 1355142548816532517, guid: 27be36567268c8e42910c695a7f2b8b0, type: 3}
