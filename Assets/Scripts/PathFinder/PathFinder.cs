@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
+using System.IO;
 
 public class PathFinder : MonoBehaviour
 {
@@ -35,7 +36,7 @@ public class PathFinder : MonoBehaviour
 
     public List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
     {
-        nodes.Clear(); // Limpar o dicionário no início do pathfinding
+        Debug.Log($"FindPath called with start: {start}, end: {end}");
         InitializeNodes();
         Node startNode = GetOrCreateNode(start);
         Node endNode = GetOrCreateNode(end);
@@ -91,6 +92,7 @@ public class PathFinder : MonoBehaviour
 
     private void InitializeNodes()
     {
+        Debug.Log("Initializing nodes");
         nodes.Clear(); // Clear the dictionary
 
         // Iterate through the grid and create nodes for walkable tiles
@@ -106,15 +108,18 @@ public class PathFinder : MonoBehaviour
                 }
             }
         }
+        Debug.Log($"Created nodes for {nodes.Count} walkable tiles");
     }
 
     private Node GetOrCreateNode(Vector2Int position)
     {
         if (nodes.TryGetValue(position, out Node node))
         {
+            Debug.Log($"Retrieved existing node at position {position}");
             return node;
         }
 
+        Debug.Log($"Creating new node at position {position}");
         Node newNode = new Node(position);
         nodes.Add(position, newNode);
         return newNode;

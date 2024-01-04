@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2476977822660478212}
   - component: {fileID: 7994857993360486638}
   - component: {fileID: 3018768414220667428}
+  - component: {fileID: 4965893706978615834}
   m_Layer: 0
   m_Name: Bush
   m_TagString: Bush
@@ -101,3 +102,16 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.16
+--- !u!114 &4965893706978615834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6511649499364479726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 974010d71bd4f1641b12642acfbe9bc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  foodAmount: 10

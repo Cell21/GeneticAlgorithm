@@ -6,9 +6,9 @@ using UnityEngine.Tilemaps;
 public class Animal : MonoBehaviour
 {
     public float moveSpeed = 0.25f;
-    public float hunger = 100; // Initial hunger level, for example, 100
-    public float hungerDecayRate = 5; // Amount of hunger to decay
-    public float hungerDecayInterval = 2f; // Time in seconds between each hunger decay
+    public float fullness = 100; // Initial hunger level, for example, 100
+    public float fulnessIncreaseRate = 5; // Amount of hunger to decay
+    public float fullnessIncreaseInterval = 2f; // Time in seconds between each hunger decay
     
 
     public Tilemap tileMap;
@@ -31,26 +31,18 @@ public class Animal : MonoBehaviour
         StartCoroutine(HungerDecayCoroutine());
     }
 
-    protected virtual void Update()
-    {
-      
-    }
-
-
     protected IEnumerator FollowPath()
     {
+        Debug.Log("Coroutine Started");
+        pathfinderExecuted = true;
         if (path != null) {
             foreach (Vector2Int tile in path)
             {
-                Debug.Log("Movendo para o tile: " + tile);
-
                 // Calcula a posição do mundo para o centro do tile
                 Vector3 worldPosition = tileMap.GetCellCenterWorld(new Vector3Int(tile.x, tile.y, 0));
 
                 // Move instantaneamente o coelho para a posição do tile
                 transform.position = worldPosition;
-
-                Debug.Log("Chegou ao tile: " + tile);
 
                 // Aguarda um pouco antes de mover para o próximo tile
                 yield return new WaitForSeconds(0.5f);
@@ -60,8 +52,6 @@ public class Animal : MonoBehaviour
         {
             Debug.Log("O path esta vazio");
         }
-
-        Debug.Log("Chegou ao destino final.");
         pathfinderExecuted = false;
         path.Clear();
     }
@@ -75,9 +65,9 @@ public class Animal : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(hungerDecayInterval);
-            hunger -= hungerDecayRate;
-            if (hunger < 0) hunger = 0; // Prevent hunger from going below zero
+            yield return new WaitForSeconds(fullnessIncreaseInterval);
+            fullness -= fulnessIncreaseRate;
+            if (fullness <= 0) fullness = 0; // Prevent hunger from going below zero
         }
     }
 }

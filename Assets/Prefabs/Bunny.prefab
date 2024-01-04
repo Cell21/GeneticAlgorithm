@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7123615245872370897}
   - component: {fileID: 3972140960522326226}
-  - component: {fileID: 485109533479274902}
   - component: {fileID: 2625215512802051846}
   - component: {fileID: 5668728954328683017}
   - component: {fileID: 7706968000923786907}
@@ -88,25 +87,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &485109533479274902
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1355142548816532517}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3526afe70ba87374c9791a484c0a244a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 0
-  fome: 100
-  hungerDecayRate: 5
-  hungerDecayInterval: 2
-  tileMap: {fileID: 0}
-  path: []
-  pathfinderExecuted: 0
 --- !u!58 &2625215512802051846
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -157,7 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 0.25
-  fome: 100
+  hunger: 100
   hungerDecayRate: 5
   hungerDecayInterval: 2
   tileMap: {fileID: 0}
