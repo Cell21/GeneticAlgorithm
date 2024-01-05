@@ -33,7 +33,6 @@ public class Animal : MonoBehaviour
 
     protected IEnumerator FollowPath()
     {
-        Debug.Log("Coroutine Started");
         pathfinderExecuted = true;
         if (path != null) {
             foreach (Vector2Int tile in path)

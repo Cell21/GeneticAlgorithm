@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Bunny : Animal
@@ -8,7 +9,7 @@ public class Bunny : Animal
     public enum BunnyState
     {
         Exploring,
-        SearchingForFood,
+        Hungry,
         Eating,
         SearchingForMatingPartner
     }
@@ -17,10 +18,13 @@ public class Bunny : Animal
     //Variaveis da exploração
     private HashSet<Vector2Int> visitedTiles = new HashSet<Vector2Int>();
 
-    //Variaveis da procura de comida
-    private GameObject targetBush = null;
-    private List<GameObject> detectedBushes = new List<GameObject>();
-
+    //Variaveis de Comer
+    private bool bushFound = false;
+    private Vector2Int bushPosition;
+    private Bush bush;
+    private bool MovingToBush = false;
+    
+    
     // Start is called before the first frame update
     protected new void Start()
     {
@@ -40,19 +44,14 @@ public class Bunny : Animal
                 case BunnyState.Exploring:
                     UpdateExploring();
                     break;
-                case BunnyState.SearchingForFood:
-                    UpdateSearchingForFood();
-                    if (HasReachedBush())
-                    {
-                        Debug.Log("Chegamos ao arbusto");
-                        ChangeState(BunnyState.Eating);
-                    }
+                case BunnyState.Hungry:
+                    UpdateHungry();
                     break;
                 case BunnyState.SearchingForMatingPartner:
                     UpdateSearchingForMatingPartner();
                     break;
                 case BunnyState.Eating:
-                    EatBush(targetBush.GetComponent<Bush>());
+                    StartCoroutine(EatBush());
                     break;
             }
         }
@@ -160,165 +159,88 @@ public class Bunny : Animal
 
     //-------------------------------------------------------------------------------------------
     //---------------------------------------Search for food-------------------------------------
-    private void UpdateSearchingForFood()
-    {
-        if (targetBush == null)
+
+    private void UpdateHungry() {
+        //Continue a explorar à procura de um arbusto
+        if (!bushFound && !MovingToBush)
         {
-            UpdateTargetBush(); // Find the closest bush
-            if (targetBush == null)
-            {
-                // If no target bush is found, continue exploring
-                Debug.Log("No target bush found. Continuing to explore.");
-                ChangeState(BunnyState.Exploring);
-                return;
-            }
+            UpdateExploring();
         }
-
-        Vector2Int bushTile = Vector2Int.FloorToInt(targetBush.transform.position);
-        Vector3Int currTile = GetTilePosition();
-        Vector2Int currTile2D = new Vector2Int(currTile.x, currTile.y);
-
-        if (bushTile != currTile2D && !base.pathfinderExecuted)
+        else
         {
-            Debug.Log($"Attempting to find path from {currTile2D} to {bushTile}");
-            base.path = PathFinder.Instance.FindPath(currTile2D, bushTile);
-            if (base.path != null && base.path.Count > 0)
-            {
-                StartCoroutine(FollowPath());
-            }
-            else
-            {
-                Debug.Log("No valid path found");
-            }
-        }
-
-        if (HasReachedBush())
-        {
-            Debug.Log("Reached the bush");
+            MoveToBush();
             ChangeState(BunnyState.Eating);
+            bushFound = false;
         }
     }
 
-    private void UpdateTargetBush()
+    private void MoveToBush()
     {
-        float minDistance = float.MaxValue;
-        GameObject closestBush = null;
+        MovingToBush = true;
+        Vector3Int currentTile = base.GetTilePosition();
+        Vector2Int currentTileConverted = new Vector2Int(currentTile.x, currentTile.y);
 
-        foreach (var bush in detectedBushes)
+        base.path = PathFinder.Instance.FindPath(currentTileConverted, bushPosition);
+
+        if (base.path == null)
         {
-            float distance = Vector2.Distance(transform.position, bush.transform.position);
-            if (distance < minDistance)
+            Debug.Log("Path was null");
+        }
+        else
+        {
+            Debug.Log("Path found:");
+            foreach (var tile in base.path)
             {
-                minDistance = distance;
-                closestBush = bush;
+                Debug.Log("Tile: " + tile);
             }
         }
+        StartCoroutine(FollowPath());
+    }
 
-        if (closestBush != targetBush)
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (currentState == BunnyState.Hungry && !MovingToBush)
         {
-            targetBush = closestBush;
-            Debug.Log("Target bush updated to: " + targetBush.name);
-            if (currentState == BunnyState.SearchingForFood)
-            {
-                FindPathToBush();
-            }
+            bush = collision.GetComponent<Bush>();
+            Vector3Int bushPositionNotConverted = tileMap.WorldToCell(collision.transform.position);
+            // Assign the grid coordinates to bushPosition
+            bushPosition = new Vector2Int(bushPositionNotConverted.x, bushPositionNotConverted.y);
+
+            bushFound = true;
         }
     }
 
+    //---------------------------------------------------------------------------------------------------------------
+    //---------------------------------------------EATING------------------------------------------------------------
+
+    private IEnumerator EatBush()
+    {
+        while (bush != null && fullness < 100 && bush.foodAmount > 0)
+        {
+            bush.Eat(1); // The bunny eats a portion of the bush
+            fullness += 5; // Increase the bunny's fullness
+
+            yield return new WaitForSeconds(1); // Wait for a second before eating again
+        }
+
+        MovingToBush = false;
+        ChangeState(BunnyState.Exploring);
+        bush = null; // Reset the target bush
+    }
+
+    //---------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------Change States---------------------------------------------
     private void CheckFullnessAndUpdateState()
     {
         if (fullness > 50 && currentState != BunnyState.Exploring)
         {
             ChangeState(BunnyState.Exploring);
         }
-        else if (fullness < 40 && currentState != BunnyState.SearchingForFood && currentState != BunnyState.Eating)
+        else if (fullness < 40 && currentState != BunnyState.Hungry && currentState != BunnyState.Eating)
         {
-            ChangeState(BunnyState.SearchingForFood);
+            ChangeState(BunnyState.Hungry);
         }
     }
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag("Bush"))
-        {
-            Debug.Log("Bush detected: " + other.gameObject.name);
-            detectedBushes.Add(other.gameObject);
-            UpdateTargetBush();
-        }
-    }
-
-    void OnTriggerStay2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag("Bush") && !detectedBushes.Contains(other.gameObject))
-        {
-            detectedBushes.Add(other.gameObject);
-            UpdateTargetBush();
-        }
-    }
-
-    private void FindPathToBush()
-    {
-        if (targetBush != null)
-        {
-            Vector2Int bushTile = Vector2Int.FloorToInt(targetBush.transform.position);
-            Vector3Int currTile = GetTilePosition();
-            Vector2Int currTile2D = new Vector2Int(currTile.x, currTile.y);
-
-            if (bushTile != currTile2D)
-            {
-                Debug.Log($"Finding path to bush at {bushTile}");
-                base.path = PathFinder.Instance.FindPath(currTile2D, bushTile);
-                if (base.path != null && base.path.Count > 0)
-                {
-                    StartCoroutine(FollowPath());
-                }
-                else
-                {
-                    Debug.Log("No valid path found");
-                }
-            }
-        }
-    }
-    //---------------------------------------------------------------------------------------------------------------
-    //---------------------------------------------EATING------------------------------------------------------------
-
-    private bool HasReachedBush()
-    {
-        if (targetBush == null)
-        {
-            return false;
-        }
-
-        Vector2Int bushTile = Vector2Int.FloorToInt(targetBush.transform.position);
-        Vector3Int currTile = GetTilePosition();
-
-        return bushTile.x == currTile.x && bushTile.y == currTile.y;
-    }
-
-    private void EatBush(Bush bush)
-    {
-        if (bush != null && HasReachedBush())
-        {
-            bush.Eat(2); // Bunny eats a portion of the bush
-            RaiseFullness();
-
-            if (fullness >= 100 || bush.foodAmount == 0)
-            {
-                ChangeState(BunnyState.Exploring);
-                targetBush = null; // Clear target bush after eating
-            }
-        }
-    }
-
-    private void RaiseFullness()
-    {
-        fullness += base.fulnessIncreaseRate; // Adjust as needed
-        fullness = Mathf.Min(fullness, 100); // Ensure fullness doesn't go above 100
-    }
-
-    //-------------------------------------------------------------------------------------------
-
-
 
     private void UpdateSearchingForMatingPartner()
     {
@@ -330,15 +252,11 @@ public class Bunny : Animal
     {
         Debug.Log("Changing state from " + currentState + " to " + newState);
         currentState = newState;
-
-        if (newState == BunnyState.SearchingForFood)
-        {
-            FindPathToBush();
-        }
     }
 
     private void KillBunny()
     {
         //Kill bunny code
     }
+
 }

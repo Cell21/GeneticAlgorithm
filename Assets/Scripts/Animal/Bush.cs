@@ -12,6 +12,7 @@ public class Bush : MonoBehaviour
         if (foodAmount <= 0)
         {
             // Handle the bush being depleted (e.g., disable the bush, play an animation)
+            Destroy(gameObject);
         }
     }
 }
